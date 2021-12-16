@@ -131,6 +131,7 @@ opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", Tru
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
+opts.Add(BoolVariable("use_breakpad", "Enable Breakpad crash dump creation.", False))
 
 # Advanced options
 opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
@@ -362,6 +363,9 @@ if env_base["rids"] == "tracked_handles":
     env_base.Append(CPPDEFINES=["RID_HANDLES_ENABLED"])
     env_base.Append(CPPDEFINES=["RID_HANDLE_ALLOCATION_TRACKING_ENABLED"])
     print("WARNING: Building with RIDs as tracked handles.")
+
+if env_base["use_breakpad"]:
+    env_base.Append(CPPDEFINES=["USE_BREAKPAD"])
 
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform

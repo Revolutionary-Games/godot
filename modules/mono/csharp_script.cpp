@@ -51,6 +51,10 @@
 #include "class_db_api_json.h"
 #endif
 
+#ifdef USE_BREAKPAD
+#include "modules/breakpad/breakpad.h"
+#endif
+
 #include "editor/editor_internal_calls.h"
 #include "godotsharp_dirs.h"
 #include "mono_gd/gd_mono_cache.h"
@@ -111,6 +115,10 @@ void CSharpLanguage::init() {
 
 	gdmono = memnew(GDMono);
 	gdmono->initialize();
+
+#ifdef USE_BREAKPAD
+	report_mono_loaded_to_breakpad();
+#endif
 
 #if defined(TOOLS_ENABLED) && defined(DEBUG_METHODS_ENABLED)
 	// Generate bindings here, before loading assemblies. 'initialize_load_assemblies' aborts
