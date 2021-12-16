@@ -44,7 +44,8 @@ static google_breakpad::ExceptionHandler *breakpad_handler = nullptr;
 #ifdef _WIN32
 static bool dump_callback(const wchar_t* dump_path, const wchar_t* minidump_id, void* context,
    EXCEPTION_POINTERS* exinfo, MDRawAssertionInfo* assertion, bool succeeded) {
-   wprintf(L"Crash dump created at: %s\n", dump_path);
+   wprintf(L"Crash dump created at: %s/%s.dmp\n", dump_path, minidump_id);
+   fwprintf(stderr, L"Crash dump created at: %s/%s.dmp\n", dump_path, minidump_id);
 #else
 static bool dump_callback(const google_breakpad::MinidumpDescriptor& descriptor, void* context, bool succeeded) {
     printf("Crash dump created at: %s\n", descriptor.path());
