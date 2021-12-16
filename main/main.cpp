@@ -80,6 +80,10 @@
 #include "editor/project_manager.h"
 #endif
 
+#ifdef BREAKPAD_ENABLED
+#include "modules/breakpad/breakpad.h"
+#endif
+
 /* Static members */
 
 // Singletons
@@ -898,6 +902,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// Initialize user data dir.
 	OS::get_singleton()->ensure_user_data_dir();
+
+#ifdef BREAKPAD_ENABLED
+    report_user_data_dir_usable();
+#endif
 
 	GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
 	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/multithreaded_server/rid_pool_prealloc", PropertyInfo(Variant::INT, "memory/limits/multithreaded_server/rid_pool_prealloc", PROPERTY_HINT_RANGE, "0,500,1")); // No negative and limit to 500 due to crashes

@@ -129,6 +129,7 @@ opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", Tru
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
+opts.Add(BoolVariable("breakpad_enabled", "Enable Breakpad crash dump creation.", False))
 
 # Advanced options
 opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
@@ -316,6 +317,9 @@ if env_base["no_editor_splash"]:
 
 if not env_base["deprecated"]:
     env_base.Append(CPPDEFINES=["DISABLE_DEPRECATED"])
+
+if env_base["breakpad_enabled"]:
+    env_base.Append(CPPDEFINES=["BREAKPAD_ENABLED"])
 
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform

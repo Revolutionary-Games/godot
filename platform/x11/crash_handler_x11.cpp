@@ -40,6 +40,10 @@
 #define CRASH_HANDLER_ENABLED 1
 #endif
 
+#ifdef BREAKPAD_ENABLED
+#include "modules/breakpad/breakpad.h"
+#endif
+
 #ifdef CRASH_HANDLER_ENABLED
 #include <cxxabi.h>
 #include <dlfcn.h>
@@ -47,7 +51,12 @@
 #include <signal.h>
 #include <stdlib.h>
 
+
 static void handle_crash(int sig) {
+#ifdef BREAKPAD_ENABLED
+    breakpad_handle_signal(sig);
+#endif
+
 	if (OS::get_singleton() == nullptr) {
 		abort();
 	}
@@ -150,6 +159,10 @@ void CrashHandler::disable() {
 	signal(SIGILL, nullptr);
 #endif
 
+#ifdef BREAKPAD_ENABLED
+    disable_breakpad();
+#endif
+
 	disabled = true;
 }
 
@@ -158,5 +171,12 @@ void CrashHandler::initialize() {
 	signal(SIGSEGV, handle_crash);
 	signal(SIGFPE, handle_crash);
 	signal(SIGILL, handle_crash);
+
+#ifdef BREAKPAD_ENABLED
+    initialize_breakpad(false);
+#endif
+
+#elif defined(BREAKPAD_ENABLED)
+    initialize_breakpad(true);
 #endif
 }
