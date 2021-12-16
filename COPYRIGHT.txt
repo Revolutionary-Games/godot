@@ -127,6 +127,11 @@ Copyright: 2007, Starbreeze Studios
  2014-2021, Godot Engine contributors.
 License: Expat and Zlib
 
+Files: ./thirdparty/breakpad/
+Comment: Breakpad is a set of client and server components which implement a crash-reporting system.
+Copyright: 2006, Google Inc.
+License: BSD-3-clause
+
 Files: ./thirdparty/bullet/
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2013, Erwin Coumans

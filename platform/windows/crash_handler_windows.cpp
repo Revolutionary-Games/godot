@@ -36,6 +36,10 @@
 #include "core/version_hash.gen.h"
 #include "main/main.h"
 
+#ifdef USE_BREAKPAD
+#include "modules/breakpad/breakpad.h"
+#endif
+
 #ifdef CRASH_HANDLER_EXCEPTION
 
 // Backtrace code code based on: https://stackoverflow.com/questions/6205981/windows-c-stack-trace-from-a-running-app
@@ -117,6 +121,10 @@ public:
 };
 
 DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
+#ifdef USE_BREAKPAD
+	breakpad_handle_exception_pointers(static_cast<void *>(ep));
+#endif
+
 	HANDLE process = GetCurrentProcess();
 	HANDLE hThread = GetCurrentThread();
 	DWORD offset_from_symbol = 0;
@@ -223,14 +231,28 @@ CrashHandler::CrashHandler() {
 }
 
 CrashHandler::~CrashHandler() {
+	disable();
 }
 
 void CrashHandler::disable() {
 	if (disabled)
 		return;
 
+#ifdef USE_BREAKPAD
+	disable_breakpad();
+#endif
+
 	disabled = true;
 }
 
 void CrashHandler::initialize() {
+#ifdef CRASH_HANDLER_EXCEPTION
+
+#ifdef USE_BREAKPAD
+	initialize_breakpad(false);
+#endif
+
+#elif defined(USE_BREAKPAD)
+	initialize_breakpad(true);
+#endif
 }
