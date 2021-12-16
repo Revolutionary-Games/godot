@@ -41,8 +41,14 @@
 
 static google_breakpad::ExceptionHandler *breakpad_handler = nullptr;
 
+#ifdef _WIN32
+static bool dump_callback(const wchar_t* dump_path, const wchar_t* minidump_id, void* context,
+   EXCEPTION_POINTERS* exinfo, MDRawAssertionInfo* assertion, bool succeeded) {
+   wprintf(L"Crash dump created at: %s\n", dump_path);
+#else
 static bool dump_callback(const google_breakpad::MinidumpDescriptor& descriptor, void* context, bool succeeded) {
     printf("Crash dump created at: %s\n", descriptor.path());
+#endif
     return succeeded;
 }
 
@@ -64,7 +70,7 @@ void initialize_breakpad(bool register_handlers) {
     }
 
     // Automatic register to the exception handlers can be disabled when Godot crash handler listens to them
-    breakpad_handler = new google_breakpad::ExceptionHandler(dump_folder.get_data(), nullptr, dump_callback, nullptr,
+    breakpad_handler = new google_breakpad::ExceptionHandler(crash_folder.c_str(), nullptr, dump_callback, nullptr,
         register_handlers ? google_breakpad::ExceptionHandler::HANDLER_ALL : google_breakpad::ExceptionHandler::HANDLER_NONE);
 #else
     google_breakpad::MinidumpDescriptor descriptor("/tmp");
@@ -92,7 +98,7 @@ void report_user_data_dir_usable() {
 	}
 
 #ifdef _WIN32
-    breakpad_handler->set_dump_path(crash_folder.get_data());
+    breakpad_handler->set_dump_path(crash_folder.c_str());
 #else
     google_breakpad::MinidumpDescriptor descriptor(crash_folder.utf8().get_data());
 

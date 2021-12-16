@@ -24,12 +24,9 @@ env_breakpad.Append(
 )
 
 breakpad_src = [
-    "src/client/minidump_file_writer.cc",
     "src/common/convert_UTF.cc",
-    "src/common/language.cc",
     "src/common/long_string_dictionary.cc",
     "src/common/md5.cc",
-    "src/common/path_helper.cc",
     "src/common/simple_string_dictionary.cc",
     "src/common/string_conversion.cc",
     "src/common/dwarf_cu_to_module.cc",
@@ -38,6 +35,9 @@ breakpad_src = [
 
 if env["platform"] == "x11":
     breakpad_src += [
+        "src/client/minidump_file_writer.cc",
+        "src/common/language.cc",
+        "src/common/path_helper.cc",
         "src/client/linux/crash_generation/crash_generation_client.cc",
         "src/client/linux/crash_generation/crash_generation_server.cc",
         # TODO: .sym files?
@@ -77,18 +77,17 @@ if env["platform"] == "windows":
     )
 
     breakpad_src += [
-        "src/client/windows/crash_generation/ReadMe.txt",
         "src/client/windows/crash_generation/client_info.cc",
         "src/client/windows/crash_generation/crash_generation_client.cc",
         "src/client/windows/crash_generation/crash_generation_server.cc",
         "src/client/windows/crash_generation/minidump_generator.cc",
         "src/client/windows/handler/exception_handler.cc",
-        "src/common/windows/dia_util.cc",
+        # "src/common/windows/dia_util.cc",
         "src/common/windows/guid_string.cc",
-        "src/common/windows/omap.cc",
-        "src/common/windows/pdb_source_line_writer.cc",
+        # "src/common/windows/omap.cc",
+        # "src/common/windows/pdb_source_line_writer.cc",
         "src/common/windows/pe_source_line_writer.cc",
-        "src/common/windows/pe_util.cc",
+        # "src/common/windows/pe_util.cc",
         "src/common/windows/string_utils.cc",
     ]
 
