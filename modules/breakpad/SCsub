@@ -92,27 +92,18 @@ if env["platform"] == "windows":
 
 if env["platform"] == "osx":
     breakpad_src += [
-        "src/client/mac/Breakpad.xcodeproj/project.pbxproj",
         "src/client/mac/Framework/Breakpad.mm",
-        "src/client/mac/Framework/Breakpad_Prefix.pch",
-        "src/client/mac/Framework/Info.plist",
         "src/client/mac/Framework/OnDemandServer.mm",
-        "src/client/mac/UnitTests-Info.plist",
         "src/client/mac/crash_generation/ConfigFile.mm",
         "src/client/mac/crash_generation/Inspector.mm",
         "src/client/mac/crash_generation/InspectorMain.mm",
         "src/client/mac/crash_generation/crash_generation_client.cc",
         "src/client/mac/crash_generation/crash_generation_server.cc",
-        "src/client/mac/gcov/libgcov.a",
         "src/client/mac/handler/breakpad_nlist_64.cc",
         "src/client/mac/handler/dynamic_images.cc",
         "src/client/mac/handler/exception_handler.cc",
         "src/client/mac/handler/minidump_generator.cc",
-        "src/client/mac/handler/obj-cTestCases-Info.plist",
         "src/client/mac/handler/protected_memory_allocator.cc",
-        "src/common/mac/Breakpad.xcconfig",
-        "src/common/mac/BreakpadDebug.xcconfig",
-        "src/common/mac/BreakpadRelease.xcconfig",
         "src/common/mac/GTMLogger.m",
         "src/common/mac/HTTPGetRequest.m",
         "src/common/mac/HTTPPutRequest.m",
@@ -134,9 +125,7 @@ if env["platform"] == "osx":
 if env["platform"] == "iphone":
     breakpad_src += [
         "src/client/ios/Breakpad.mm",
-        "src/client/ios/Breakpad.xcodeproj/project.pbxproj",
         "src/client/ios/BreakpadController.mm",
-        "src/client/ios/Breakpad_Prefix.pch",
         "src/client/ios/exception_handler_no_mach.cc",
         "src/client/ios/handler/ios_exception_minidump_generator.mm",
     ]
