@@ -33,7 +33,7 @@
 #include "core/bind/core_bind.h"
 #include "core/os/os.h"
 
-#ifdef _WIN32
+#ifdef WINDOWS_ENABLED
 #include <thirdparty/breakpad/src/client/windows/handler/exception_handler.h>
 #else
 #include <thirdparty/breakpad/src/client/linux/handler/exception_handler.h>
@@ -41,7 +41,7 @@
 
 static google_breakpad::ExceptionHandler *breakpad_handler = nullptr;
 
-#ifdef _WIN32
+#ifdef WINDOWS_ENABLED
 static bool dump_callback(const wchar_t* dump_path, const wchar_t* minidump_id, void* context,
    EXCEPTION_POINTERS* exinfo, MDRawAssertionInfo* assertion, bool succeeded) {
    wprintf(L"Crash dump created at: %s/%s.dmp\n", dump_path, minidump_id);
@@ -59,7 +59,7 @@ void initialize_breakpad(bool register_handlers) {
         return;
     }
 
-#ifdef _WIN32
+#ifdef WINDOWS_ENABLED
     String crash_folder;
 
     wchar_t tempPath[MAX_PATH + 1];
@@ -98,7 +98,7 @@ void report_user_data_dir_usable() {
         dir.make_dir_recursive(crash_folder);
 	}
 
-#ifdef _WIN32
+#ifdef WINDOWS_ENABLED
     breakpad_handler->set_dump_path(crash_folder.c_str());
 #else
     google_breakpad::MinidumpDescriptor descriptor(crash_folder.utf8().get_data());
@@ -111,7 +111,7 @@ void breakpad_handle_signal(int signal) {
     if(breakpad_handler == nullptr)
         return;
 
-#ifndef _WIN32
+#ifndef WINDOWS_ENABLED
     // TODO: Should this use HandleSignal(int sig, siginfo_t* info, void* uc) instead?
     // would require changing to sigaction in crash_handler_x11.cpp
     breakpad_handler->SimulateSignalDelivery(signal);
@@ -122,7 +122,7 @@ void breakpad_handle_exception_pointers(void *exinfo) {
     if(breakpad_handler == nullptr)
         return;
 
-#ifdef _WIN32
+#ifdef WINDOWS_ENABLED
     breakpad_handler->WriteMinidumpForException(static_cast<EXCEPTION_POINTERS*>(exinfo));
 #endif
 }
