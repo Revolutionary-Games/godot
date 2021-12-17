@@ -11,6 +11,10 @@ thirdparty_obj = []
 
 thirdparty_dir = "#thirdparty/breakpad/"
 
+# TODO: find out when these are needed (if at all)
+dwarf_module = False
+stabs_module = False
+
 # Parts of this build script is based on the previous PR trying to implement this
 # https://github.com/godotengine/godot/pull/22778/files
 
@@ -19,30 +23,23 @@ env_breakpad.Append(
         "PUBLIC",
         "_HAS_EXCEPTIONS=0",
         "_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS",
-        "CRASHPAD_ZLIB_SOURCE_EXTERNAL",
     ]
 )
 
 breakpad_src = [
     "src/common/convert_UTF.cc",
-    "src/common/long_string_dictionary.cc",
+    # "src/common/long_string_dictionary.cc",
     "src/common/md5.cc",
-    "src/common/simple_string_dictionary.cc",
+    # "src/common/simple_string_dictionary.cc",
     "src/common/string_conversion.cc",
-    "src/common/dwarf_cu_to_module.cc",
-    "src/common/module.cc",
+    # "src/common/module.cc",
 ]
 
 if env["platform"] == "x11":
     breakpad_src += [
         "src/client/minidump_file_writer.cc",
-        "src/common/language.cc",
-        "src/common/path_helper.cc",
         "src/client/linux/crash_generation/crash_generation_client.cc",
         "src/client/linux/crash_generation/crash_generation_server.cc",
-        # TODO: .sym files?
-        # "src/client/linux/data/linux-gate-amd.sym",
-        # "src/client/linux/data/linux-gate-intel.sym",
         "src/client/linux/dump_writer_common/thread_info.cc",
         "src/client/linux/dump_writer_common/ucontext_reader.cc",
         "src/client/linux/handler/minidump_descriptor.cc",
@@ -53,6 +50,8 @@ if env["platform"] == "x11":
         "src/client/linux/minidump_writer/linux_dumper.cc",
         "src/client/linux/minidump_writer/linux_ptrace_dumper.cc",
         "src/client/linux/minidump_writer/minidump_writer.cc",
+        "src/common/language.cc",
+        "src/common/path_helper.cc",
         "src/common/linux/breakpad_getcontext.S",
         "src/common/linux/crc32.cc",
         "src/common/linux/elf_core_dump.cc",
@@ -152,8 +151,7 @@ if env["platform"] == "iphone":
 #         "src/common/solaris/guid_creator.cc",
 #     ]
 
-# TODO: find out when this and the stabs stuff is needed (if at all)
-if False:
+if dwarf_module:
     breakpad_src += [
         "src/common/dwarf/bytereader.cc",
         "src/common/dwarf/cfi_assembler.cc",
@@ -164,9 +162,10 @@ if False:
         "src/common/dwarf_cfi_to_module.cc",
         "src/common/dwarf_line_to_module.cc",
         "src/common/dwarf_range_list_handler.cc",
+        "src/common/dwarf_cu_to_module.cc",
     ]
 
-if False:
+if stabs_module:
     breakpad_src += [
         "src/common/stabs_reader.cc",
         "src/common/stabs_to_module.cc",
@@ -176,13 +175,8 @@ breakpad_src = [thirdparty_dir + file for file in breakpad_src]
 
 env_breakpad.Prepend(CPPPATH=[thirdparty_dir + "src"])
 
-# TODO: is this needed? also the earlier zlib external definition?
-env_breakpad.Append(CPPPATH=["#thirdparty/zlib"])
-
-# env_breakpad.Append(CPPDEFINES=["BT_USE_OLD_DAMPING_METHOD", "BT_THREADSAFE"])
-
 env_thirdparty = env_breakpad.Clone()
-# env_thirdparty.disable_warnings()
+env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(thirdparty_obj, breakpad_src)
 env.modules_sources += thirdparty_obj
 
