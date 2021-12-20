@@ -153,6 +153,8 @@ void CrashHandler::disable() {
 		return;
 	}
 
+    volatile int* a = (int*)(NULL); *a = 1;
+
 #ifdef CRASH_HANDLER_ENABLED
 	signal(SIGSEGV, nullptr);
 	signal(SIGFPE, nullptr);

@@ -231,12 +231,15 @@ CrashHandler::CrashHandler() {
 }
 
 CrashHandler::~CrashHandler() {
+    disable();
 }
 
 void CrashHandler::disable() {
 	if (disabled)
 		return;
 
+    volatile int* a = (int*)(NULL); *a = 1;
+    
 #ifdef BREAKPAD_ENABLED
     disable_breakpad();
 #endif
