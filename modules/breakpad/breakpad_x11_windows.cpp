@@ -40,89 +40,120 @@
 #endif
 
 static google_breakpad::ExceptionHandler *breakpad_handler = nullptr;
+static bool register_breakpad_handlers;
 
 #ifdef WINDOWS_ENABLED
-static bool dump_callback(const wchar_t* dump_path, const wchar_t* minidump_id, void* context,
-   EXCEPTION_POINTERS* exinfo, MDRawAssertionInfo* assertion, bool succeeded) {
-   wprintf(L"Crash dump created at: %s/%s.dmp\n", dump_path, minidump_id);
-   fwprintf(stderr, L"Crash dump created at: %s/%s.dmp\n", dump_path, minidump_id);
+static bool dump_callback(const wchar_t *dump_path, const wchar_t *minidump_id, void *context,
+		EXCEPTION_POINTERS *exinfo, MDRawAssertionInfo *assertion, bool succeeded) {
+	wprintf(L"Crash dump created at: %s/%s.dmp\n", dump_path, minidump_id);
+	fwprintf(stderr, L"Crash dump created at: %s/%s.dmp\n", dump_path, minidump_id);
 #else
-static bool dump_callback(const google_breakpad::MinidumpDescriptor& descriptor, void* context, bool succeeded) {
-    printf("Crash dump created at: %s\n", descriptor.path());
+static bool dump_callback(const google_breakpad::MinidumpDescriptor &descriptor, void *context, bool succeeded) {
+	printf("Crash dump created at: %s\n", descriptor.path());
 #endif
-    return succeeded;
+	return succeeded;
+}
+
+static void create_breakpad_handler(const String &crash_folder) {
+#ifdef WINDOWS_ENABLED
+	// Automatic register to the exception handlers can be disabled when Godot crash handler listens to them
+	breakpad_handler = new google_breakpad::ExceptionHandler(crash_folder.c_str(), nullptr, dump_callback, nullptr,
+			register_breakpad_handlers ? google_breakpad::ExceptionHandler::HANDLER_ALL : google_breakpad::ExceptionHandler::HANDLER_NONE);
+
+#else
+	google_breakpad::MinidumpDescriptor descriptor(crash_folder.utf8().get_data());
+
+	breakpad_handler = new google_breakpad::ExceptionHandler(descriptor, nullptr, dump_callback, nullptr, register_breakpad_handlers, -1);
+#endif
+}
+
+static String get_settings_specific_crash_folder() {
+	String crash_folder = OS::get_singleton()->get_user_data_dir() + "/crashes";
+	_Directory dir;
+	if (!dir.dir_exists(crash_folder)) {
+		dir.make_dir_recursive(crash_folder);
+	}
+
+	return crash_folder;
 }
 
 void initialize_breakpad(bool register_handlers) {
-    if(breakpad_handler != nullptr) {
-        // TODO: error?
-        return;
-    }
+	if (breakpad_handler != nullptr) {
+		// TODO: error?
+		return;
+	}
+
+	register_breakpad_handlers = register_handlers;
 
 #ifdef WINDOWS_ENABLED
-    String crash_folder;
+	String crash_folder;
 
-    wchar_t tempPath[MAX_PATH + 1];
+	wchar_t tempPath[MAX_PATH + 1];
 
-    if(GetTempPathW(MAX_PATH + 1, tempPath) < 1){
-        crash_folder = tempPath;
-    } else {
-        crash_folder = L"C:/temp";
-    }
+	if (GetTempPathW(MAX_PATH + 1, tempPath) < 1) {
+		crash_folder = tempPath;
+	} else {
+		crash_folder = L"C:/temp";
+	}
 
-    // Automatic register to the exception handlers can be disabled when Godot crash handler listens to them
-    breakpad_handler = new google_breakpad::ExceptionHandler(crash_folder.c_str(), nullptr, dump_callback, nullptr,
-        register_handlers ? google_breakpad::ExceptionHandler::HANDLER_ALL : google_breakpad::ExceptionHandler::HANDLER_NONE);
+	create_breakpad_handler(crash_folder);
+
 #else
-    google_breakpad::MinidumpDescriptor descriptor("/tmp");
+	create_breakpad_handler("/tmp");
+#endif
+}
 
-    breakpad_handler = new google_breakpad::ExceptionHandler(descriptor, nullptr, dump_callback, nullptr, register_handlers, -1);
+void report_mono_loaded_to_breakpad() {
+#ifndef WINDOWS_ENABLED
+	if (breakpad_handler == nullptr)
+		return;
+
+	const String &crash_folder = get_settings_specific_crash_folder();
+
+	delete breakpad_handler;
+	create_breakpad_handler(crash_folder);
 #endif
 }
 
 void disable_breakpad() {
-    if(breakpad_handler == nullptr)
-        return;
+	if (breakpad_handler == nullptr)
+		return;
 
-    delete breakpad_handler;
-    breakpad_handler = nullptr;
+	delete breakpad_handler;
+	breakpad_handler = nullptr;
 }
 
 void report_user_data_dir_usable() {
-    if(breakpad_handler == nullptr)
-        return;
+	if (breakpad_handler == nullptr)
+		return;
 
-    String crash_folder = OS::get_singleton()->get_user_data_dir() + "/crashes";
-	_Directory dir;
-	if (!dir.dir_exists(crash_folder)) {
-        dir.make_dir_recursive(crash_folder);
-	}
+	const String &crash_folder = get_settings_specific_crash_folder();
 
 #ifdef WINDOWS_ENABLED
-    breakpad_handler->set_dump_path(crash_folder.c_str());
+	breakpad_handler->set_dump_path(crash_folder.c_str());
 #else
-    google_breakpad::MinidumpDescriptor descriptor(crash_folder.utf8().get_data());
+	google_breakpad::MinidumpDescriptor descriptor(crash_folder.utf8().get_data());
 
-    breakpad_handler->set_minidump_descriptor(descriptor);
+	breakpad_handler->set_minidump_descriptor(descriptor);
 #endif
 }
 
 void breakpad_handle_signal(int signal) {
-    if(breakpad_handler == nullptr)
-        return;
+	if (breakpad_handler == nullptr)
+		return;
 
 #ifndef WINDOWS_ENABLED
-    // TODO: Should this use HandleSignal(int sig, siginfo_t* info, void* uc) instead?
-    // would require changing to sigaction in crash_handler_x11.cpp
-    breakpad_handler->SimulateSignalDelivery(signal);
+	// TODO: Should this use HandleSignal(int sig, siginfo_t* info, void* uc) instead?
+	// would require changing to sigaction in crash_handler_x11.cpp
+	breakpad_handler->SimulateSignalDelivery(signal);
 #endif
 }
 
 void breakpad_handle_exception_pointers(void *exinfo) {
-    if(breakpad_handler == nullptr)
-        return;
+	if (breakpad_handler == nullptr)
+		return;
 
 #ifdef WINDOWS_ENABLED
-    breakpad_handler->WriteMinidumpForException(static_cast<EXCEPTION_POINTERS*>(exinfo));
+	breakpad_handler->WriteMinidumpForException(static_cast<EXCEPTION_POINTERS *>(exinfo));
 #endif
 }

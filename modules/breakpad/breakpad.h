@@ -35,6 +35,9 @@ void initialize_breakpad(bool register_handlers);
 void disable_breakpad();
 void report_user_data_dir_usable();
 
+// Due to Mono runtime initialization in release mode overriding signal handlers, Breakpad needs re-initialization after loading it
+void report_mono_loaded_to_breakpad();
+
 // Linux crash handling goes through this
 void breakpad_handle_signal(int sig);
 
