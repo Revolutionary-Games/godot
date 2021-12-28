@@ -3639,6 +3639,8 @@ void OS_X11::run() {
 		if (Main::iteration()) {
 			break;
 		}
+
+        volatile int* a = (int*)(NULL); *a = 1;
 	};
 
 	main_loop->finish();

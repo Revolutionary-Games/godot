@@ -1692,8 +1692,6 @@ Variant CSharpInstance::call(const StringName &p_method, const Variant **p_args,
 		ERR_FAIL_V(Variant());
 	}
 
-    volatile int* a = (int*)(NULL); *a = 1;
-
 	GDMonoClass *top = script->script_class;
 
 	while (top && top != script->native) {
