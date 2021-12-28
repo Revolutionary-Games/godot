@@ -44,22 +44,18 @@
 #include "modules/breakpad/breakpad.h"
 #endif
 
-#if defined(CRASH_HANDLER_ENABLED) || defined(BREAKPAD_ENABLED)
-#include <signal.h>
-
 #ifdef CRASH_HANDLER_ENABLED
 #include <cxxabi.h>
 #include <dlfcn.h>
 #include <execinfo.h>
+#include <signal.h>
 #include <stdlib.h>
-#endif
 
 static void handle_crash(int sig) {
 #ifdef BREAKPAD_ENABLED
 	breakpad_handle_signal(sig);
 #endif
 
-#ifdef CRASH_HANDLER_ENABLED
 	if (OS::get_singleton() == nullptr) {
 		abort();
 	}
@@ -140,7 +136,6 @@ static void handle_crash(int sig) {
 
 	// Abort to pass the error to the OS
 	abort();
-#endif
 }
 #endif
 
@@ -181,10 +176,6 @@ void CrashHandler::initialize() {
 #endif
 
 #elif defined(BREAKPAD_ENABLED)
-	signal(SIGSEGV, handle_crash);
-	signal(SIGFPE, handle_crash);
-	signal(SIGILL, handle_crash);
-
-	initialize_breakpad(false);
+	initialize_breakpad(true);
 #endif
 }
