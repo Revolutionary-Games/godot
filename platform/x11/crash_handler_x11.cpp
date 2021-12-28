@@ -51,10 +51,9 @@
 #include <signal.h>
 #include <stdlib.h>
 
-
 static void handle_crash(int sig) {
 #ifdef BREAKPAD_ENABLED
-    breakpad_handle_signal(sig);
+	breakpad_handle_signal(sig);
 #endif
 
 	if (OS::get_singleton() == nullptr) {
@@ -153,8 +152,6 @@ void CrashHandler::disable() {
 		return;
 	}
 
-    volatile int* a = (int*)(NULL); *a = 1;
-
 #ifdef CRASH_HANDLER_ENABLED
 	signal(SIGSEGV, nullptr);
 	signal(SIGFPE, nullptr);
@@ -162,7 +159,7 @@ void CrashHandler::disable() {
 #endif
 
 #ifdef BREAKPAD_ENABLED
-    disable_breakpad();
+	disable_breakpad();
 #endif
 
 	disabled = true;
@@ -175,10 +172,10 @@ void CrashHandler::initialize() {
 	signal(SIGILL, handle_crash);
 
 #ifdef BREAKPAD_ENABLED
-    initialize_breakpad(false);
+	initialize_breakpad(false);
 #endif
 
 #elif defined(BREAKPAD_ENABLED)
-    initialize_breakpad(true);
+	initialize_breakpad(true);
 #endif
 }
