@@ -32,7 +32,7 @@ breakpad_src = [
     "src/common/string_conversion.cc",
 ]
 
-if env["platform"] == "linuxbsd":
+if env["platform"] == "linux":
     breakpad_src += [
         "src/client/linux/crash_generation/crash_generation_client.cc",
         "src/client/linux/crash_generation/crash_generation_server.cc",
@@ -175,8 +175,8 @@ env.modules_sources += thirdparty_obj
 
 module_obj = []
 
-if env["platform"] == "linuxbsd" or env["platform"] == "windows":
-    env_breakpad.add_source_files(module_obj, ["breakpad_linuxbsd_windows.cpp"])
+if env["platform"] == "linux" or env["platform"] == "windows":
+    env_breakpad.add_source_files(module_obj, ["breakpad_linux_windows.cpp"])
 else:
     raise Exception("Breakpad not implemented for selected platform")
 
