@@ -30,7 +30,7 @@
 
 #include "breakpad.h"
 
-#include "core/io/dir_access.h"
+#include "core/bind/core_bind.h"
 #include "core/os/os.h"
 
 #ifdef WINDOWS_ENABLED
@@ -71,12 +71,10 @@ static void create_breakpad_handler(const String &crash_folder) {
 
 static String get_settings_specific_crash_folder() {
 	String crash_folder = OS::get_singleton()->get_user_data_dir() + "/crashes";
-	DirAccess *dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	if (!dir->dir_exists(crash_folder)) {
-		dir->make_dir_recursive(crash_folder);
+	_Directory dir;
+	if (!dir.dir_exists(crash_folder)) {
+		dir.make_dir_recursive(crash_folder);
 	}
-
-	memdelete(dir);
 
 	return crash_folder;
 }
