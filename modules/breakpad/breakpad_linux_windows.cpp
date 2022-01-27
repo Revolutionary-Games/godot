@@ -131,7 +131,7 @@ void report_user_data_dir_usable() {
 	const String &crash_folder = get_settings_specific_crash_folder();
 
 #ifdef WINDOWS_ENABLED
-	breakpad_handler->set_dump_path(reinterpret_cast<const wchar_t *>(crash_folder.utf16().get_data()));
+	breakpad_handler->set_dump_path(crash_folder.c_str());
 #else
 	google_breakpad::MinidumpDescriptor descriptor(crash_folder.utf8().get_data());
 
