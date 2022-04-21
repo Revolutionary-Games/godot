@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -374,7 +374,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					font_color_shadow = _find_color(text, p_font_color_shadow);
 					if (_find_underline(text) || (_find_meta(text, &meta) && underline_meta)) {
 						underline = true;
-					} else if (_find_strikethrough(text)) {
+					}
+					if (_find_strikethrough(text)) {
 						strikethrough = true;
 					}
 
@@ -448,11 +449,18 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					line_descent = MAX(line_descent, descent);
 					fh = line_ascent + line_descent;
 
+					float align_spacing = 0.0f;
+					bool is_at_line_wrap = false;
 					if (end && c[end - 1] == ' ') {
 						if (align == ALIGN_FILL && p_mode != PROCESS_CACHE) {
 							int ln = MIN(l.offset_caches.size() - 1, line);
 							if (l.space_caches[ln]) {
-								align_ofs = spaces * l.offset_caches[ln] / l.space_caches[ln];
+								align_spacing = l.offset_caches[ln] / l.space_caches[ln];
+								align_ofs = spaces * align_spacing;
+
+								if (l.space_caches[ln] == spaces) {
+									is_at_line_wrap = true;
+								}
 							}
 						}
 						spaces++;
@@ -583,21 +591,24 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 										draw_rect(Rect2(p_ofs.x + pofs, p_ofs.y + y, cw, lh), selection_bg);
 									}
 
-									if (p_font_color_shadow.a > 0) {
+									const Color char_color = selected && override_selected_font_color ? selection_fg : fx_color;
+									const Color shadow_color = p_font_color_shadow * Color(1, 1, 1, char_color.a);
+
+									if (shadow_color.a > 0) {
 										const Point2 shadow_base_pos = p_ofs + Point2(align_ofs + pofs, y + lh - line_descent);
-										font->draw_char(ci, shadow_base_pos + shadow_ofs + fx_offset, fx_char, c[i + 1], p_font_color_shadow);
+										font->draw_char(ci, shadow_base_pos + shadow_ofs + fx_offset, fx_char, c[i + 1], shadow_color);
 
 										if (p_shadow_as_outline) {
-											font->draw_char(ci, shadow_base_pos + Vector2(-shadow_ofs.x, shadow_ofs.y) + fx_offset, fx_char, c[i + 1], p_font_color_shadow);
-											font->draw_char(ci, shadow_base_pos + Vector2(shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], p_font_color_shadow);
-											font->draw_char(ci, shadow_base_pos + Vector2(-shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], p_font_color_shadow);
+											font->draw_char(ci, shadow_base_pos + Vector2(-shadow_ofs.x, shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
+											font->draw_char(ci, shadow_base_pos + Vector2(shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
+											font->draw_char(ci, shadow_base_pos + Vector2(-shadow_ofs.x, -shadow_ofs.y) + fx_offset, fx_char, c[i + 1], shadow_color);
 										}
 									}
 
 									if (selected) {
-										drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), fx_char, c[i + 1], override_selected_font_color ? selection_fg : fx_color);
+										drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent), fx_char, c[i + 1], char_color);
 									} else {
-										cw = drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent) + fx_offset, fx_char, c[i + 1], fx_color);
+										cw = drawer.draw_char(ci, p_ofs + Point2(align_ofs + pofs, y + lh - line_descent) + fx_offset, fx_char, c[i + 1], char_color);
 									}
 								} else if (previously_visible && c[i] != '\t') {
 									backtrack += font->get_char_size(fx_char, c[i + 1]).x;
@@ -613,24 +624,28 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 							}
 						}
 
+#ifdef TOOLS_ENABLED
+						const float line_width = EDSCALE;
+#else
+						const float line_width = 1.0f;
+#endif
 						if (underline) {
 							Color uc = color;
 							uc.a *= 0.5;
-							int uy = y + lh - line_descent + 2;
-							float underline_width = 1.0;
-#ifdef TOOLS_ENABLED
-							underline_width *= EDSCALE;
-#endif
-							VS::get_singleton()->canvas_item_add_line(ci, p_ofs + Point2(align_ofs + wofs, uy), p_ofs + Point2(align_ofs + wofs + w, uy), uc, underline_width);
-						} else if (strikethrough) {
+
+							const int line_y = y + lh - (line_descent - 2);
+							const Point2 from = p_ofs + Point2(align_ofs + wofs, line_y);
+							const Point2 to = from + Point2(w + (is_at_line_wrap ? 0 : align_spacing), 0);
+							VS::get_singleton()->canvas_item_add_line(ci, from, to, uc, line_width);
+						}
+						if (strikethrough) {
 							Color uc = color;
 							uc.a *= 0.5;
-							int uy = y + lh - (line_ascent + line_descent) / 2;
-							float strikethrough_width = 1.0;
-#ifdef TOOLS_ENABLED
-							strikethrough_width *= EDSCALE;
-#endif
-							VS::get_singleton()->canvas_item_add_line(ci, p_ofs + Point2(align_ofs + wofs, uy), p_ofs + Point2(align_ofs + wofs + w, uy), uc, strikethrough_width);
+
+							const int line_y = y + lh - (line_ascent + line_descent) / 2;
+							const Point2 from = p_ofs + Point2(align_ofs + wofs, line_y);
+							const Point2 to = from + Point2(w + (is_at_line_wrap ? 0 : align_spacing), 0);
+							VS::get_singleton()->canvas_item_add_line(ci, from, to, uc, line_width);
 						}
 					}
 
@@ -1655,6 +1670,7 @@ void RichTextLabel::_remove_item(Item *p_item, const int p_line, const int p_sub
 			_remove_item(p_item->subitems.front()->get(), p_line, p_subitem_line);
 		}
 	}
+	memdelete(p_item);
 }
 
 void RichTextLabel::add_image(const Ref<Texture> &p_image, const int p_width, const int p_height) {

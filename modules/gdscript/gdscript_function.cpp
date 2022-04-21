@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -473,7 +473,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = "Left operand of 'is' was already freed.";
 					OPCODE_BREAK;
 				}
-				if (b->is_invalid_object()) {
+				if (b->get_type() != Variant::OBJECT || b->is_invalid_object()) {
 					err_text = "Right operand of 'is' is not a class.";
 					OPCODE_BREAK;
 				}
@@ -509,7 +509,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 						if (!nc) {
-							err_text = "Right operand of 'is' is not a class (type: '" + obj_B->get_class() + "').";
+							if (obj_B) {
+								err_text = "Right operand of 'is' is not a class (type: '" + obj_B->get_class() + "').";
+							} else {
+								err_text = "Right operand of 'is' is null.";
+							}
 							OPCODE_BREAK;
 						}
 #endif

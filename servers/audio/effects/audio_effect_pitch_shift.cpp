@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -125,7 +125,6 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 
 			/* this is the analysis step */
 			for (k = 0; k <= fftFrameSize2; k++) {
-
 				/* de-interlace FFT buffer */
 				real = gFFTworksp[2*k];
 				imag = gFFTworksp[2*k+1];
@@ -224,10 +223,8 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 }
 		}
 	}
-
-
-
 }
+
 
 
 void SMBPitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
@@ -365,4 +362,7 @@ AudioEffectPitchShift::AudioEffectPitchShift() {
 	pitch_scale = 1.0;
 	oversampling = 4;
 	fft_size = FFT_SIZE_2048;
+	wet = 0.0;
+	dry = 0.0;
+	filter = false;
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -775,7 +775,8 @@ InputDefault::InputDefault() {
 void InputDefault::joy_button(int p_device, int p_button, bool p_pressed) {
 	_THREAD_SAFE_METHOD_;
 	Joypad &joy = joy_names[p_device];
-	//printf("got button %i, mapping is %i\n", p_button, joy.mapping);
+	ERR_FAIL_INDEX(p_button, JOY_BUTTON_MAX);
+
 	if (joy.last_buttons[p_button] == p_pressed) {
 		return;
 	}
@@ -1352,11 +1353,14 @@ String InputDefault::get_joy_button_string(int p_button) {
 
 int InputDefault::get_joy_button_index_from_string(String p_button) {
 	for (int i = 0; i < JOY_BUTTON_MAX; i++) {
-		if (p_button == _buttons[i]) {
+		if (_buttons[i] == nullptr) {
+			break;
+		}
+		if (p_button == String(_buttons[i])) {
 			return i;
 		}
 	}
-	ERR_FAIL_V(-1);
+	ERR_FAIL_V_MSG(-1, vformat("Could not find a button index matching the string \"%s\".", p_button));
 }
 
 int InputDefault::get_unused_joy_id() {
@@ -1375,9 +1379,12 @@ String InputDefault::get_joy_axis_string(int p_axis) {
 
 int InputDefault::get_joy_axis_index_from_string(String p_axis) {
 	for (int i = 0; i < JOY_AXIS_MAX; i++) {
-		if (p_axis == _axes[i]) {
+		if (_axes[i] == nullptr) {
+			break;
+		}
+		if (p_axis == String(_axes[i])) {
 			return i;
 		}
 	}
-	ERR_FAIL_V(-1);
+	ERR_FAIL_V_MSG(-1, vformat("Could not find an axis index matching the string \"%s\".", p_axis));
 }

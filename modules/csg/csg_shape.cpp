@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -273,7 +273,7 @@ void CSGShape::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const f
 }
 
 void CSGShape::_update_shape() {
-	if (parent || !is_inside_tree()) {
+	if (parent) {
 		return;
 	}
 
@@ -296,17 +296,19 @@ void CSGShape::_update_shape() {
 		ERR_CONTINUE(mat < -1 || mat >= face_count.size());
 		int idx = mat == -1 ? face_count.size() - 1 : mat;
 
-		Plane p(n->faces[i].vertices[0], n->faces[i].vertices[1], n->faces[i].vertices[2]);
+		if (n->faces[i].smooth) {
+			Plane p(n->faces[i].vertices[0], n->faces[i].vertices[1], n->faces[i].vertices[2]);
 
-		for (int j = 0; j < 3; j++) {
-			Vector3 v = n->faces[i].vertices[j];
-			Vector3 add;
-			if (vec_map.lookup(v, add)) {
-				add += p.normal;
-			} else {
-				add = p.normal;
+			for (int j = 0; j < 3; j++) {
+				Vector3 v = n->faces[i].vertices[j];
+				Vector3 add;
+				if (vec_map.lookup(v, add)) {
+					add += p.normal;
+				} else {
+					add = p.normal;
+				}
+				vec_map.set(v, add);
 			}
-			vec_map.set(v, add);
 		}
 
 		face_count.write[idx]++;
@@ -973,6 +975,10 @@ CSGBrush *CSGSphere::_build_brush() {
 				double u0 = double(j) / radial_segments;
 
 				double longitude1 = longitude_step * (j + 1);
+				if (j == radial_segments - 1) {
+					longitude1 = 0;
+				}
+
 				double x1 = Math::sin(longitude1);
 				double z1 = Math::cos(longitude1);
 				double u1 = double(j + 1) / radial_segments;
@@ -1328,6 +1334,9 @@ CSGBrush *CSGCylinder::_build_brush() {
 			for (int i = 0; i < sides; i++) {
 				float inc = float(i) / sides;
 				float inc_n = float((i + 1)) / sides;
+				if (i == sides - 1) {
+					inc_n = 0;
+				}
 
 				float ang = inc * Math_PI * 2.0;
 				float ang_n = inc_n * Math_PI * 2.0;
@@ -1570,6 +1579,9 @@ CSGBrush *CSGTorus::_build_brush() {
 			for (int i = 0; i < sides; i++) {
 				float inci = float(i) / sides;
 				float inci_n = float((i + 1)) / sides;
+				if (i == sides - 1) {
+					inci_n = 0;
+				}
 
 				float angi = inci * Math_PI * 2.0;
 				float angi_n = inci_n * Math_PI * 2.0;
@@ -1580,6 +1592,9 @@ CSGBrush *CSGTorus::_build_brush() {
 				for (int j = 0; j < ring_sides; j++) {
 					float incj = float(j) / ring_sides;
 					float incj_n = float((j + 1)) / ring_sides;
+					if (j == ring_sides - 1) {
+						incj_n = 0;
+					}
 
 					float angj = incj * Math_PI * 2.0;
 					float angj_n = incj_n * Math_PI * 2.0;
@@ -1757,7 +1772,7 @@ CSGBrush *CSGPolygon::_build_brush() {
 	}
 	int shape_sides = shape_polygon.size();
 	Vector<int> shape_faces = Geometry::triangulate_polygon(shape_polygon);
-	ERR_FAIL_COND_V_MSG(shape_faces.size() < 3, brush, "Failed to triangulate CSGPolygon");
+	ERR_FAIL_COND_V_MSG(shape_faces.size() < 3, brush, "Failed to triangulate CSGPolygon. Make sure the polygon doesn't have any intersecting edges.");
 
 	// Get polygon enclosing Rect2.
 	Rect2 shape_rect(shape_polygon[0], Vector2());

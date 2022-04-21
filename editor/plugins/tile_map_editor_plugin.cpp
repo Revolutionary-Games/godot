@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -2062,6 +2062,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	tile_info->set_modulate(Color(1, 1, 1, 0.8));
 	tile_info->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	tile_info->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("main", "EditorFonts"));
+	tile_info->add_color_override("font_color", Color(1, 1, 1, 0.8)); // Overlay has a fixed dark background.
 	// The tile info is only displayed after a tile has been hovered.
 	tile_info->hide();
 	CanvasItemEditor::get_singleton()->add_control_to_info_overlay(tile_info);

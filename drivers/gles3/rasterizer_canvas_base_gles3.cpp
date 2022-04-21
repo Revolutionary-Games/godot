@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -585,8 +585,7 @@ void RasterizerCanvasBaseGLES3::_draw_gui_primitive(int p_points, const Vector2 
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, data.polygon_buffer);
-	//TODO the below call may need to be replaced with: p_points * stride * 4 * sizeof(float), &b[0]);
-	storage->buffer_orphan_and_upload(data.polygon_buffer_size, 0, p_points * stride * 4, &b[0], GL_ARRAY_BUFFER, _buffer_upload_usage_flag);
+	storage->buffer_orphan_and_upload(data.polygon_buffer_size, 0, p_points * stride * sizeof(float), &b[0], GL_ARRAY_BUFFER, _buffer_upload_usage_flag);
 
 	glBindVertexArray(data.polygon_buffer_quad_arrays[version]);
 	glDrawArrays(prim[p_points], 0, p_points);

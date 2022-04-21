@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -154,13 +154,11 @@ Error PCKPacker::flush(bool p_verbose) {
 		src->close();
 		memdelete(src);
 		count += 1;
-		if (p_verbose && files.size() > 0) {
-			if (count % 100 == 0) {
-				printf("%i/%i (%.2f)\r", count, files.size(), float(count) / files.size() * 100);
-				fflush(stdout);
-			};
-		};
-	};
+		const int file_num = files.size();
+		if (p_verbose && (file_num > 0)) {
+			print_line(vformat("[%d/%d - %d%%] PCKPacker flush: %s -> %s", count, file_num, float(count) / file_num * 100, files[i].src_path, files[i].path));
+		}
+	}
 
 	if (p_verbose) {
 		printf("\n");

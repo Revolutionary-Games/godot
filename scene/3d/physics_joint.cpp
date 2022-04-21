@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -178,14 +178,17 @@ int Joint::get_solver_priority() const {
 
 void Joint::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
+		case NOTIFICATION_POST_ENTER_TREE: {
+			if (joint.is_valid()) {
+				_disconnect_signals();
+			}
 			_update_joint();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (joint.is_valid()) {
 				_disconnect_signals();
-				_update_joint(true);
 			}
+			_update_joint(true);
 		} break;
 	}
 }
@@ -194,6 +197,10 @@ void Joint::set_exclude_nodes_from_collision(bool p_enable) {
 	if (exclude_from_collision == p_enable) {
 		return;
 	}
+	if (joint.is_valid()) {
+		_disconnect_signals();
+	}
+	_update_joint(true);
 	exclude_from_collision = p_enable;
 	_update_joint();
 }

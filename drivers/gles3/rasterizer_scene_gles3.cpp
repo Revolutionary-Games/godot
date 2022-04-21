@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -2114,7 +2114,9 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 		state.scene_shader.set_conditional(SceneShaderGLES3::USE_PHYSICAL_LIGHT_ATTENUATION, storage->config.use_physical_light_attenuation);
 
-		bool octahedral_compression = e->instance->base_type != VS::INSTANCE_IMMEDIATE && ((RasterizerStorageGLES3::Surface *)e->geometry)->format & VisualServer::ArrayFormat::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION;
+		bool octahedral_compression = e->instance->base_type != VS::INSTANCE_IMMEDIATE &&
+				((RasterizerStorageGLES3::Surface *)e->geometry)->format & VisualServer::ArrayFormat::ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION &&
+				!(((RasterizerStorageGLES3::Surface *)e->geometry)->blend_shapes.size() && e->instance->blend_values.size());
 		if (octahedral_compression != prev_octahedral_compression) {
 			state.scene_shader.set_conditional(SceneShaderGLES3::ENABLE_OCTAHEDRAL_COMPRESSION, octahedral_compression);
 			rebind = true;

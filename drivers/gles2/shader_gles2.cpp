@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2021 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2021 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,7 +77,7 @@ GLint ShaderGLES2::get_uniform_location(int p_index) const {
 }
 
 bool ShaderGLES2::bind() {
-	if (active != this || !version || new_conditional_version.key != conditional_version.key) {
+	if (active != this || !version || !(new_conditional_version == conditional_version)) {
 		conditional_version = new_conditional_version;
 		version = get_current_version();
 	} else {
